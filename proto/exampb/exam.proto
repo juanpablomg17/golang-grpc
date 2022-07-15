@@ -1,0 +1,24 @@
+syntax="proto3";
+
+package exam;
+
+option go_package = ".;exampb";
+
+message Exam {
+    string id = 1;
+    string name = 2;
+}
+
+message GetExamRequest {
+    string id = 1;
+}
+
+message SetExamRequest {
+    string id = 1;
+    string name = 2;
+}
+
+service ExamService {
+    rpc GetExam(GetExamRequest) returns (Exam);
+    rpc SetExam(Exam) returns (SetExamRequest);
+}
