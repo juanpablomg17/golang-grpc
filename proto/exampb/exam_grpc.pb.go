@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.12.4
-// source: exampb/exam.proto
+// source: proto/exampb/exam.proto
 
 package exampb
 
@@ -23,7 +23,8 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ExamServiceClient interface {
 	GetExam(ctx context.Context, in *GetExamRequest, opts ...grpc.CallOption) (*Exam, error)
-	SetExam(ctx context.Context, in *Exam, opts ...grpc.CallOption) (*SetExamRequest, error)
+	SetExam(ctx context.Context, in *Exam, opts ...grpc.CallOption) (*SetExamReponse, error)
+	SetQuestions(ctx context.Context, opts ...grpc.CallOption) (ExamService_SetQuestionsClient, error)
 }
 
 type examServiceClient struct {
@@ -43,8 +44,8 @@ func (c *examServiceClient) GetExam(ctx context.Context, in *GetExamRequest, opt
 	return out, nil
 }
 
-func (c *examServiceClient) SetExam(ctx context.Context, in *Exam, opts ...grpc.CallOption) (*SetExamRequest, error) {
-	out := new(SetExamRequest)
+func (c *examServiceClient) SetExam(ctx context.Context, in *Exam, opts ...grpc.CallOption) (*SetExamReponse, error) {
+	out := new(SetExamReponse)
 	err := c.cc.Invoke(ctx, "/exam.ExamService/SetExam", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -52,12 +53,47 @@ func (c *examServiceClient) SetExam(ctx context.Context, in *Exam, opts ...grpc.
 	return out, nil
 }
 
+func (c *examServiceClient) SetQuestions(ctx context.Context, opts ...grpc.CallOption) (ExamService_SetQuestionsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ExamService_ServiceDesc.Streams[0], "/exam.ExamService/SetQuestions", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &examServiceSetQuestionsClient{stream}
+	return x, nil
+}
+
+type ExamService_SetQuestionsClient interface {
+	Send(*Question) error
+	CloseAndRecv() (*SetQuestionResponse, error)
+	grpc.ClientStream
+}
+
+type examServiceSetQuestionsClient struct {
+	grpc.ClientStream
+}
+
+func (x *examServiceSetQuestionsClient) Send(m *Question) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *examServiceSetQuestionsClient) CloseAndRecv() (*SetQuestionResponse, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(SetQuestionResponse)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ExamServiceServer is the server API for ExamService service.
 // All implementations must embed UnimplementedExamServiceServer
 // for forward compatibility
 type ExamServiceServer interface {
 	GetExam(context.Context, *GetExamRequest) (*Exam, error)
-	SetExam(context.Context, *Exam) (*SetExamRequest, error)
+	SetExam(context.Context, *Exam) (*SetExamReponse, error)
+	SetQuestions(ExamService_SetQuestionsServer) error
 	mustEmbedUnimplementedExamServiceServer()
 }
 
@@ -68,8 +104,11 @@ type UnimplementedExamServiceServer struct {
 func (UnimplementedExamServiceServer) GetExam(context.Context, *GetExamRequest) (*Exam, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetExam not implemented")
 }
-func (UnimplementedExamServiceServer) SetExam(context.Context, *Exam) (*SetExamRequest, error) {
+func (UnimplementedExamServiceServer) SetExam(context.Context, *Exam) (*SetExamReponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SetExam not implemented")
+}
+func (UnimplementedExamServiceServer) SetQuestions(ExamService_SetQuestionsServer) error {
+	return status.Errorf(codes.Unimplemented, "method SetQuestions not implemented")
 }
 func (UnimplementedExamServiceServer) mustEmbedUnimplementedExamServiceServer() {}
 
@@ -120,6 +159,32 @@ func _ExamService_SetExam_Handler(srv interface{}, ctx context.Context, dec func
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ExamService_SetQuestions_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(ExamServiceServer).SetQuestions(&examServiceSetQuestionsServer{stream})
+}
+
+type ExamService_SetQuestionsServer interface {
+	SendAndClose(*SetQuestionResponse) error
+	Recv() (*Question, error)
+	grpc.ServerStream
+}
+
+type examServiceSetQuestionsServer struct {
+	grpc.ServerStream
+}
+
+func (x *examServiceSetQuestionsServer) SendAndClose(m *SetQuestionResponse) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *examServiceSetQuestionsServer) Recv() (*Question, error) {
+	m := new(Question)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // ExamService_ServiceDesc is the grpc.ServiceDesc for ExamService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -136,6 +201,12 @@ var ExamService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ExamService_SetExam_Handler,
 		},
 	},
-	Streams:  []grpc.StreamDesc{},
-	Metadata: "exampb/exam.proto",
+	Streams: []grpc.StreamDesc{
+		{
+			StreamName:    "SetQuestions",
+			Handler:       _ExamService_SetQuestions_Handler,
+			ClientStreams: true,
+		},
+	},
+	Metadata: "proto/exampb/exam.proto",
 }

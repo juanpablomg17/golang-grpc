@@ -3,9 +3,10 @@ package main
 import (
 	"log"
 	"net"
+	"protobuf-grpc/proto/exampb"
+	"protobuf-grpc/proto/studentpb"
 	"protobuf-grpc/src/db"
 	"protobuf-grpc/src/server"
-	"protobuf-grpc/studentpb"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
@@ -22,10 +23,15 @@ func main() {
 		log.Fatal(err)
 	}
 
-	server := server.NewStudentServer(repo)
+	studentRepository := db.NewStudentRepository(repo)
+	examRepository := db.NewExamrepository(repo)
+
+	studentServer := server.NewStudentServer(studentRepository)
+	examSever := server.NewExamServer(examRepository)
 
 	s := grpc.NewServer()
-	studentpb.RegisterStudentServiceServer(s, server)
+	studentpb.RegisterStudentServiceServer(s, studentServer)
+	exampb.RegisterExamServiceServer(s, examSever)
 
 	reflection.Register(s)
 

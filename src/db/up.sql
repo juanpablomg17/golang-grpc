@@ -6,8 +6,18 @@ CREATE TABLE students (
     age INTEGER NOT NULL
 );
 
+
 DROP TABLE IF EXISTS exams;
-CREATE TABLE exams(
+CREATE TABLE exams (
     id VARCHAR(32) PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(255) NOT NULL
+);
+
+DROP TABLE IF EXISTS questions;
+CREATE TABLE questions (
+    id VARCHAR(32) PRIMARY KEY,
+    exam_id VARCHAR(32) NOT NULL ,
+    question VARCHAR(255) NOT NULL,
+    answer VARCHAR(255) NOT NULL,
+    FOREIGN KEY (exam_id) REFERENCES exams(id)
 );
