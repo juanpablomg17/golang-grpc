@@ -4,9 +4,11 @@ import (
 	"context"
 	"io"
 	"log"
-	"protobuf-grpc/proto/exampb"
+	"protobuf-grpc/exampb"
 	"protobuf-grpc/src/model"
 	"protobuf-grpc/src/repository"
+	"protobuf-grpc/studentpb"
+	"time"
 )
 
 type ExamServer struct {
@@ -82,4 +84,55 @@ func (s *ExamServer) SetQuestions(stream exampb.ExamService_SetQuestionsServer) 
 		}
 
 	}
+}
+
+func (s *ExamServer) EnrollStundet(stream exampb.ExamService_EnrollStundetServer) error {
+	for {
+		msg, err := stream.Recv()
+		if err == io.EOF {
+			return stream.SendAndClose(&exampb.SetQuestionResponse{
+				Ok: true,
+			})
+		}
+
+		if err != nil {
+			return err
+		}
+
+		enrollment := &model.Enrollment{
+			StudentId: msg.GetStudentId(),
+			ExamId:    msg.GetStudentId(),
+		}
+
+		err = s.repo.SetEnrollment(context.Background(), enrollment)
+		if err != nil {
+			return stream.SendAndClose(&exampb.SetQuestionResponse{
+				Ok: false,
+			})
+		}
+
+	}
+}
+
+func (s *ExamServer) GetSudentPerExam(req *exampb.GetSudentPerExamRequest, stream exampb.ExamService_GetSudentPerExamServer) error {
+	students, err := s.repo.GetStudentsPerExams(context.Background(), req.GetExamId())
+	if err != nil {
+		return err
+	}
+
+	for _, student := range students {
+		student := &studentpb.Student{
+			Id:   student.Id,
+			Name: student.Name,
+			Age:  student.Age,
+		}
+
+		err := stream.Send(student)
+		if err != nil {
+			return err
+		}
+		time.Sleep(2 * time.Millisecond)
+	}
+
+	return nil
 }

@@ -1,8 +1,10 @@
 syntax="proto3";
 
+import "studentpb/student.proto";
+
 package exam;
 
-option go_package = ".;exampb";
+option go_package = "protobuf-grpc/exampb";
 
 message Exam {
     string id = 1;
@@ -29,8 +31,19 @@ message SetQuestionResponse {
     bool ok = 1;
 }
 
+message EnrollmentRequest {
+    string student_id = 1;
+    string exam_id = 2;
+}
+
+message GetSudentPerExamRequest {
+    string exam_id = 1;
+}
+
 service ExamService {
     rpc GetExam(GetExamRequest) returns (Exam);
     rpc SetExam(Exam) returns (SetExamReponse);
     rpc SetQuestions(stream Question) returns (SetQuestionResponse);
+    rpc EnrollStundet(stream EnrollmentRequest) returns (SetQuestionResponse);
+    rpc GetSudentPerExam(GetSudentPerExamRequest) returns (stream student.Student);
 }

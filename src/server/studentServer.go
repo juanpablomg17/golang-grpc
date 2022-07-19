@@ -3,9 +3,9 @@ package server
 import (
 	"context"
 	"log"
-	"protobuf-grpc/proto/studentpb"
 	"protobuf-grpc/src/model"
 	"protobuf-grpc/src/repository"
+	"protobuf-grpc/studentpb"
 )
 
 type Server struct {

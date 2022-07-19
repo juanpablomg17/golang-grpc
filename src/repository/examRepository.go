@@ -8,6 +8,8 @@ import (
 type ExamRepository interface {
 	RepositoryBase[model.Exam]
 	SetQuestion(ctx context.Context, question *model.Question) error
+	GetStudentsPerExams(ctx context.Context, examId string) ([]*model.Student, error)
+	SetEnrollment(ctx context.Context, enrollment *model.Enrollment) error
 }
 
 var implementationExam ExamRepository

@@ -3,10 +3,11 @@ package main
 import (
 	"log"
 	"net"
-	"protobuf-grpc/proto/exampb"
-	"protobuf-grpc/proto/studentpb"
+
+	"protobuf-grpc/exampb"
 	"protobuf-grpc/src/db"
 	"protobuf-grpc/src/server"
+	"protobuf-grpc/studentpb"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
